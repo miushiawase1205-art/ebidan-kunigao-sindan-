@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBiDAN 国顔診断</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fff;
+  color: #242424;
+  font-family: "Noto Serif JP", serif;
+}
+
+header {
+  text-align: center;
+  padding: 65px 20px 45px;
+  border-bottom: 1px solid #c9a96a;
+}
+
+.crown {
+  font-size: 34px;
+  margin-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 7vw, 52px);
+  font-weight: 600;
+  letter-spacing: .12em;
+}
+
+.subtitle {
+  margin-top: 15px;
+  color: #92733b;
+  font-size: 13px;
+  letter-spacing: .14em;
+}
+
+.gold-line {
+  width: 75px;
+  height: 1px;
+  background: #c9a96a;
+  margin: 28px auto;
+}
+
+/* スタート */
+
+#start {
+  max-width: 700px;
+  margin: auto;
+  padding: 65px 25px;
+  text-align: center;
+}
+
+.intro {
+  line-height: 2.1;
+  font-size: 15px;
+}
+
+.start-button,
+.restart-button {
+  margin-top: 30px;
+  padding: 15px 45px;
+  border: 1px solid #b89554;
+  background: white;
+  color: #765a2d;
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: .12em;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.start-button:hover,
+.restart-button:hover {
+  background: #b89554;
+  color: white;
+}
+
+/* 診断 */
+
+#quiz {
+  display: none;
+  max-width: 900px;
+  margin: auto;
+  padding: 35px 20px 70px;
+}
+
+.progress {
+  text-align: center;
+  color: #92733b;
+  font-size: 13px;
+  letter-spacing: .15em;
+  margin-bottom: 20px;
+}
+
+.question {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 35px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.card {
+  border: 1px solid #d7c49a;
+  background: white;
+  padding: 12px;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(120,90,30,.12);
+}
+
+/* 写真がない場合 */
+
+.member-visual {
+  aspect-ratio: 3 / 4;
+  background:
+    linear-gradient(135deg, #faf8f3, #eee7d8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.member-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  color: #a18a60;
+}
+
+.placeholder-symbol {
+  font-size: 42px;
+  margin-bottom: 15px;
+}
+
+.placeholder-text {
+  font-size: 12px;
+  letter-spacing: .1em;
+}
+
+.member-name {
+  text-align: center;
+  font-size: 21px;
+  margin-top: 17px;
+}
+
+.member-group {
+  text-align: center;
+  color: #92733b;
+  font-size: 12px;
+  margin-top: 5px;
+  letter-spacing: .08em;
+}
+
+/* 結果 */
+
+#result {
+  display: none;
+  max-width: 800px;
+  margin: auto;
+  padding: 65px 20px 80px;
+  text-align: center;
+}
+
+.result-small {
+  color: #92733b;
+  font-size: 13px;
+  letter-spacing: .2em;
+}
+
+.result-type {
+  font-size: clamp(32px, 8vw, 55px);
+  margin: 15px 0;
+}
+
+.result-percent {
+  font-size: 25px;
+  color: #92733b;
+}
+
+.result-description {
+  max-width: 650px;
+  margin: 30px auto 55px;
+  line-height: 2;
+  font-size: 14px;
+}
+
+.result-list {
+  max-width: 620px;
+  margin: auto;
+  text-align: left;
+}
+
+.result-item {
+  margin-bottom: 22px;
+}
+
+.result-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 14px;
+}
+
+.bar {
+  height: 7px;
+  background: #eee9df;
+}
+
+.bar-inner {
+  height: 100%;
+  background: #b89554;
+  transition: width 1s;
+}
+
+@media (max-width: 600px) {
+
+  header {
+    padding-top: 45px;
+  }
+
+  .cards {
+    gap: 10px;
+  }
+
+  .card {
+    padding: 8px;
+  }
+
+  .member-name {
+    font-size: 17px;
+  }
+
+  .member-group {
+    font-size: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="crown">♔</div>
+  <h1>EBiDAN 国顔診断</h1>
+  <div class="subtitle">
+    ― あなたが惹かれる顔は、どの国の顔？ ―
+  </div>
+</header>
+
+
+<!-- =========================
+     START
+========================= -->
+
+<section id="start">
+
+  <div class="gold-line"></div>
+
+  <p class="intro">
+    EBiDANメンバーの中から<br>
+    「好き！」と思う顔を選んでください。<br><br>
+
+    あなたの選択から、7種類の国顔のうち<br>
+    どのタイプに惹かれやすいのかを診断します。
+  </p>
+
+  <div class="gold-line"></div>
+
+  <button class="start-button" onclick="startQuiz()">
+    診断をはじめる
+  </button>
+
+</section>
+
+
+<!-- =========================
+     QUIZ
+========================= -->
+
+<section id="quiz">
+
+  <div class="progress" id="progress"></div>
+
+  <div class="question">
+    あなたが好きな顔はどっち？
+  </div>
+
+  <div class="cards">
+
+    <div class="card" onclick="choose(0)">
+      <div class="member-visual" id="visual0"></div>
+      <div class="member-name" id="name0"></div>
+      <div class="member-group" id="group0"></div>
+    </div>
+
+    <div class="card" onclick="choose(1)">
+      <div class="member-visual" id="visual1"></div>
+      <div class="member-name" id="name1"></div>
+      <div class="member-group" id="group1"></div>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     RESULT
+========================= -->
+
+<section id="result">
+
+  <div class="result-small">
+    YOUR EBiDAN FACE TYPE
+  </div>
+
+  <div class="gold-line"></div>
+
+  <div class="result-type" id="resultType"></div>
+
+  <div class="result-percent" id="resultPercent"></div>
+
+  <p class="result-description" id="resultDescription"></p>
+
+  <div class="result-list" id="resultList"></div>
+
+  <button class="restart-button" onclick="restart()">
+    もう一度診断する
+  </button>
+
+</section>
+
+
+<script>
+
+/* =========================================
+   7種類の国顔
+========================================= */
+
+const faceTypes = {
+
+  "☀️ 建国顔": {
+    description:
+      "太陽のような華やかさと存在感を持つ美形。健康的で堂々としていて、自然と人を惹きつけるカリスマ性を感じさせるタイプ。"
+  },
+
+  "👑 継承顔": {
+    description:
+      "あどけなさと品のよさをあわせ持つ王子様フェイス。柔らかな雰囲気と優しい微笑みが印象的なタイプ。"
+  },
+
+  "⚔️ 護国顔": {
+    description:
+      "きりっとした目元と男前な雰囲気を持つタイプ。凛々しさや頼もしさがあり、国を守る存在のような顔。"
+  },
+
+  "🔥 敵国顔": {
+    description:
+      "強いエネルギーと野心を感じさせるタイプ。華やかで印象的な存在感があり、ライバルのような雰囲気を持つ顔。"
+  },
+
+  "🌻 救国顔": {
+    description:
+      "明るく親しみやすく、老若男女から愛される好青年タイプ。自然な笑顔と温かさで周囲を明るくする顔。"
+  },
+
+  "🌙 傾国顔": {
+    description:
+      "月や夜を思わせる儚さと美しさを持つタイプ。ミステリアスで、見る人を惹きつける魔性の魅力がある顔。"
+  },
+
+  "🥀 亡国顔": {
+    description:
+      "どこか不憫さや物語性を感じさせるタイプ。独特の雰囲気があり、強く印象に残る顔。"
+  }
+
+};
+
+
+/* =========================================
+   メンバー
+========================================= */
+
+const members = [
+
+  /* 超特急 */
+
+  ["カイ","超特急","☀️ 建国顔"],
+  ["リョウガ","超特急","🥀 亡国顔"],
+  ["タクヤ","超特急","🌙 傾国顔"],
+  ["ユーキ","超特急","🔥 敵国顔"],
+  ["タカシ","超特急","👑 継承顔"],
+  ["シューヤ","超特急","🌻 救国顔"],
+  ["マサヒロ","超特急","🌙 傾国顔"],
+  ["アロハ","超特急","⚔️ 護国顔"],
+  ["ハル","超特急","🌻 救国顔"],
+
+  /* M!LK */
+
+  ["佐野勇斗","M!LK","☀️ 建国顔"],
+  ["山中柔太朗","M!LK","🌙 傾国顔"],
+  ["曽野舜太","M!LK","👑 継承顔"],
+  ["塩﨑太智","M!LK","🌻 救国顔"],
+  ["吉田仁人","M!LK","⚔️ 護国顔"],
+
+  /* SUPER★DRAGON */
+
+  ["古川毅","SUPER★DRAGON","☀️ 建国顔"],
+  ["ジャン海渡","SUPER★DRAGON","⚔️ 護国顔"],
+  ["飯島颯","SUPER★DRAGON","🌻 救国顔"],
+  ["伊藤壮吾","SUPER★DRAGON","🥀 亡国顔"],
+  ["田中洸希","SUPER★DRAGON","🌙 傾国顔"],
+  ["池田彪馬","SUPER★DRAGON","🌙 傾国顔"],
+  ["松村和哉","SUPER★DRAGON","🔥 敵国顔"],
+  ["柴崎楽","SUPER★DRAGON","👑 継承顔"],
+  ["志村玲於","SUPER★DRAGON","⚔️ 護国顔"],
+
+  /* Sakurashimeji */
+
+  ["田中雅功","Sakurashimeji","👑 継承顔"],
+  ["髙田彪我","Sakurashimeji","🌻 救国顔"],
+
+  /* ONE N' ONLY */
+
+  ["TETTA","ONE N' ONLY","⚔️ 護国顔"],
+  ["REI","ONE N' ONLY","🌙 傾国顔"],
+  ["EIKU","ONE N' ONLY","☀️ 建国顔"],
+  ["HAYATO","ONE N' ONLY","🔥 敵国顔"],
+  ["NAOYA","ONE N' ONLY","👑 継承顔"],
+
+  /* 原因は自分にある。 */
+
+  ["大倉空人","原因は自分にある。","👑 継承顔"],
+  ["小泉光咲","原因は自分にある。","🌙 傾国顔"],
+  ["桜木雅哉","原因は自分にある。","☀️ 建国顔"],
+  ["長野凌大","原因は自分にある。","⚔️ 護国顔"],
+  ["武藤潤","原因は自分にある。","☀️ 建国顔"],
+  ["杢代和人","原因は自分にある。","🔥 敵国顔"],
+  ["吉澤要人","原因は自分にある。","🥀 亡国顔"],
+
+  /* BUDDiiS */
+
+  ["FUMINORI","BUDDiiS","🌙 傾国顔"],
+  ["KEVIN","BUDDiiS","🌙 傾国顔"],
+  ["MORRIE","BUDDiiS","🥀 亡国顔"],
+  ["SEIYA","BUDDiiS","☀️ 建国顔"],
+  ["YUMA","BUDDiiS","⚔️ 護国顔"],
+  ["SHOW","BUDDiiS","🌻 救国顔"],
+  ["TAKUYA","BUDDiiS","⚔️ 護国顔"],
+  ["FUMIYA","BUDDiiS","👑 継承顔"],
+  ["SHOOT","BUDDiiS","🌻 救国顔"],
+
+  /* ICEx */
+
+  ["志賀李玖","ICEx","🌙 傾国顔"],
+  ["阿久根温世","ICEx","☀️ 建国顔"],
+  ["千田波空斗","ICEx","⚔️ 護国顔"],
+  ["筒井俊旭","ICEx","🌻 救国顔"],
+  ["山本龍人","ICEx","👑 継承顔"],
+  ["竹野世梛","ICEx","🌙 傾国顔"],
+  ["中村旺太郎","ICEx","🌻 救国顔"],
+  ["八神遼介","ICEx","👑 継承顔"],
+
+  /* Lienel */
+
+  ["森田璃空","Lienel","🌻 救国顔"],
+  ["近藤駿太","Lienel","🌙 傾国顔"],
+  ["高岡ミロ","Lienel","🌻 救国顔"],
+  ["高桑真之","Lienel","🔥 敵国顔"],
+  ["芳賀柊斗","Lienel","⚔️ 護国顔"],
+  ["武田創世","Lienel","👑 継承顔"],
+
+  /* iiONDO */
+
+  ["三村航輝","iiONDO","🌻 救国顔"],
+  ["畑駿平","iiONDO","⚔️ 護国顔"],
+  ["守本勝倶","iiONDO","🔥 敵国顔"],
+  ["髙橋夢人","iiONDO","🌙 傾国顔"],
+  ["宮本琉成","iiONDO","⚔️ 護国顔"],
+  ["大野遥斗","iiONDO","👑 継承顔"],
+  ["堀蒼寿","iiONDO","🌻 救国顔"],
+  ["三戸琳仁","iiONDO","👑 継承顔"]
+
+];
+
+// メンバー写真
+const photoMap = {
+  "カイ": "kai.jpeg.jpg",
+  "リョウガ": "ryoga.jpeg.jpg",
+  "タクヤ": "takuya.jpeg.jpg",
+  "ユーキ": "yuki.jpeg.jpg",
+  "タカシ": "takashi.jpeg.jpg",
+  "シューヤ": "shuya.jpeg.jpg",
+  "マサヒロ": "masahiro.jpeg.jpg",
+  "アロハ": "aloha.jpeg.jpg",
+  "ハル": "haru.jpeg.jpg",
+
+  "佐野勇斗": "sanohayato.jpeg.JPG",
+  "山中柔太朗": "yamanakajutaro.jpeg.JPG",
+  "曽野舜太": "sonoshunta.jpeg.JPG",
+  "塩﨑太智": "shiozakidaichi.jpeg.JPG",
+  "吉田仁人": "yoshidajinto.jpeg.jpg",
+
+  "古川毅": "hurukawatsuyoshi.jpeg.JPG",
+  "ジャン海渡": "jean.jpeg.JPG",
+  "飯島颯": "iijimahayate.jpeg.JPG",
+  "伊藤壮吾": "itosougo.jpeg.JPG",
+  "田中洸希": "tanakakoki.jpeg.JPG",
+  "池田彪馬": "ikedahyoma.jpeg.JPG",
+  "柴崎楽": "shibasakiraku.jpeg.JPG",
+  "志村玲於": "shimurareo.jpeg.JPG",
+
+  "TETTA": "tetta.jpeg.jpg",
+  "REI": "sawamurarei.jpeg.jpg",
+  "EIKU": "eiku.jpeg.jpg",
+  "HAYATO": "takaohayato.jpeg.jpg",
+  "NAOYA": "naoya.jpeg.jpg",
+
+  "大倉空人": "okurakato.jpeg.JPG",
+  "小泉光咲": "koizumikosaku.jpeg.JPG",
+  "桜木雅哉": "sakuragimasaya.jpeg.JPG",
+  "長野凌大": "naganoryota.jpeg.JPG",
+  "武藤潤": "mutoujun.jpeg.JPG",
+  "杢代和人": "mokudaikazuto.jpeg.JPG",
+  "吉澤要人": "yoshizawakaname.jpeg.JPG",
+
+  "FUMINORI": "fuminori.jpeg.jpg",
+  "KEVIN": "kevin.jpeg.jpg",
+  "MORRIE": "morrie.jpeg.jpg",
+  "SEIYA": "seiya.jpeg.jpg",
+  "YUMA": "yuma.jpeg.jpg",
+  "SHOW": "show.jpeg.jpg",
+  "TAKUYA": "otsukitakuya.jpeg.jpg",
+  "FUMIYA": "fumiya.jpeg.jpg",
+  "SHOOT": "shoot.jpeg.jpg",
+
+  "志賀李玖": "shigariku.jpeg.jpg",
+  "阿久根温世": "haruse.jpeg.jpg",
+  "千田波空斗": "hakuto.jpeg.jpg",
+  "筒井俊旭": "tsutsuitoshiaki.jpeg.jpg",
+  "山本龍人": "ryuto.jpeg.jpg",
+  "竹野世梛": "sena.jpeg.jpg",
+  "中村旺太郎": "otaro.jpeg.jpg",
+  "八神遼介": "ryosuke.jpeg.jpg",
+
+  "森田璃空": "moritariku.jpeg.jpg",
+  "近藤駿太": "kondoshunta.jpeg.jpg",
+  "高岡ミロ": "takaokamiro.jpeg.jpg",
+  "高桑真之": "takakuwasaneyuki.jpeg.jpg",
+  "芳賀柊斗": "hagashuto.jpeg.jpg",
+  "武田創世": "takedasose.jpeg.jpg",
+
+  "三村航輝": "mimurakoki.jpeg.jpg",
+  "畑駿平": "hatashunpei.jpeg.jpg",
+  "守本勝倶": "morimotokatsugu.jpeg.jpg",
+  "髙橋夢人": "takahashiyumeto.jpeg.jpg",
+  "宮本琉成": "miyamotoryusei.jpeg.jpg",
+  "大野遥斗": "ohnoharuto.jpeg.jpg",
+  "堀蒼寿": "horisouju.jpeg.jpg"
+};
+
+// メンバーと写真を紐づける
+members.forEach(member => {
+  if (photoMap[member[0]]) {
+    member[3] = photoMap[member[0]];
+  }
+});
+/* =========================================
+   診断設定
+========================================= */
+
+const QUESTION_COUNT = 15;
+
+let questions = [];
+let currentQuestion = 0;
+let scores = {};
+let currentPair = [];
+
+
+/* =========================================
+   初期化
+========================================= */
+
+function resetScores() {
+
+  scores = {};
+
+  Object.keys(faceTypes).forEach(type => {
+    scores[type] = 0;
+  });
+
+}
+
+
+/* =========================================
+   ランダム2択を作る
+========================================= */
+
+function makeQuestions() {
+
+  questions = [];
+
+  for (let i = 0; i < QUESTION_COUNT; i++) {
+
+    let a;
+    let b;
+
+    do {
+      a = members[Math.floor(Math.random() * members.length)];
+      b = members[Math.floor(Math.random() * members.length)];
+    } while (a === b);
+
+    questions.push([a,b]);
+  }
+
+}
+
+
+/* =========================================
+   診断開始
+========================================= */
+
+function startQuiz() {
+
+  document.getElementById("start").style.display = "none";
+  document.getElementById("result").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+
+  currentQuestion = 0;
+
+  resetScores();
+  makeQuestions();
+
+  showQuestion();
+
+}
+
+
+/* =========================================
+   問題表示
+========================================= */
+
+function showQuestion() {
+
+  currentPair = questions[currentQuestion];
+
+  document.getElementById("progress").textContent =
+    `QUESTION ${currentQuestion + 1} / ${QUESTION_COUNT}`;
+
+
+  for (let i = 0; i < 2; i++) {
+
+    const member = currentPair[i];
+
+    document.getElementById(`name${i}`).textContent =
+      member[0];
+
+    document.getElementById(`group${i}`).textContent =
+      member[1];
+
+
+    /*
+      写真を追加したくなったら
+      ここに photo を追加できます。
+
+      例：
+
+      ["カイ","超特急","☀️ 建国顔","images/kai.jpg"]
+
+    */
+
+    const visual =
+      document.getElementById(`visual${i}`);
+
+    if (member[3]) {
+
+      visual.innerHTML =
+        `<img src="${member[3]}" alt="${member[0]}">`;
+
+    } else {
+
+      visual.innerHTML = `
+        <div class="placeholder">
+
+          <div class="placeholder-symbol">
+            ♔
+          </div>
+
+          <div class="placeholder-text">
+            EBiDAN
+          </div>
+
+        </div>
+      `;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================
+   選択
+========================================= */
+
+function choose(index) {
+
+  const selected = currentPair[index];
+
+  scores[selected[2]]++;
+
+  currentQuestion++;
+
+  if (currentQuestion >= QUESTION_COUNT) {
+
+    showResult();
+
+  } else {
+
+    showQuestion();
+
+  }
+
+}
+
+
+/* =========================================
+   結果
+========================================= */
+
+function showResult() {
+
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").style.display = "block";
+
+
+  const results =
+    Object.entries(scores)
+      .map(([type, score]) => ({
+        type,
+        score,
+        percent:
+          Math.round(
+            score / QUESTION_COUNT * 100
+          )
+      }))
+      .sort((a,b) => b.score - a.score);
+
+
+  const top = results[0];
+
+
+  document.getElementById("resultType").textContent =
+    top.type;
+
+  document.getElementById("resultPercent").textContent =
+    `${top.percent}%`;
+
+  document.getElementById("resultDescription").textContent =
+    faceTypes[top.type].description;
+
+
+  const resultList =
+    document.getElementById("resultList");
+
+  resultList.innerHTML = "";
+
+
+  results.forEach(result => {
+
+    const item =
+      document.createElement("div");
+
+    item.className = "result-item";
+
+    item.innerHTML = `
+
+      <div class="result-top">
+
+        <span>${result.type}</span>
+
+        <span>${result.percent}%</span>
+
+      </div>
+
+      <div class="bar">
+
+        <div
+          class="bar-inner"
+          style="width:${result.percent}%">
+        </div>
+
+      </div>
+
+    `;
+
+    resultList.appendChild(item);
+
+  });
+
+}
+
+
+/* =========================================
+   リスタート
+========================================= */
+
+function restart() {
+
+  document.getElementById("result").style.display = "none";
+  document.getElementById("start").style.display = "block";
+
+}
+
+</script>
+
+</body>
+</html>
