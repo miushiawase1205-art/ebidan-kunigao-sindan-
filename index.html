@@ -826,7 +826,36 @@ function showResult() {
     resultList.appendChild(item);
 
   });
+  const shareButton = document.createElement("button");
+  shareButton.textContent = "結果を共有する ♡";
+  shareButton.style.marginTop = "24px";
+  shareButton.style.padding = "14px 28px";
+  shareButton.style.border = "1px solid #c9a45c";
+  shareButton.style.background = "#fff";
+  shareButton.style.color = "#8c6b2f";
+  shareButton.style.borderRadius = "999px";
+  shareButton.style.fontSize = "15px";
+  shareButton.style.cursor = "pointer";
 
+  shareButton.onclick = async () => {
+    const shareText =
+      `EBiDAN 国顔診断の結果は「${top.type}」でした♡`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "EBiDAN 国顔診断",
+        text: shareText,
+        url: window.location.href
+      });
+    } else {
+      await navigator.clipboard.writeText(
+        shareText + "\n" + window.location.href
+      );
+      alert("結果をコピーしたよ♡");
+    }
+  };
+
+  document.getElementById("result").appendChild(shareButton);
 }
 
 
